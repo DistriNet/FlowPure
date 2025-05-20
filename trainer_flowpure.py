@@ -5,8 +5,6 @@ import argparse
 import attacks.batch_attacks as attacks
 import utils
 
-dataset = 'CIFAR10'
-noise_type = 'pgd'
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -14,6 +12,8 @@ if __name__ == "__main__":
     parser.add_argument("--noise_type", type=str, choices=["pgd", "cw", "gauss"], required=True)
 
     args = parser.parse_args()
+    dataset = args.dataset
+    noise_type = args.noise_type
 
     FM = torchcfm.ConditionalFlowMatcher(sigma=0)
     snapshot_freq = 20000
