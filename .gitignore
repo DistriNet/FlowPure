@@ -3,4 +3,3 @@
 *.pth
 /resources/checkpoints
 /resources/datasets
-/resources/figure
