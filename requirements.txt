@@ -5,7 +5,7 @@ PyYAML
 scikit_learn
 numpy==1.26.3
 torch==2.3.1
-torchvision==0.15.1
+torchvision
 foolbox
 torchcfm
 torchattacks

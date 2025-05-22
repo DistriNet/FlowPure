@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ## Usage
 
 ### Training
-Train a Continuous Normalizng Flow model using `trainer_flowpure.py`, specifying the dataset (CIFAR10 or CIFAR100) and noise type (pgd, cw, gauss):
+Train a Continuous Normalizing Flow model using `trainer_flowpure.py`, specifying the dataset (CIFAR10 or CIFAR100) and noise type (pgd, cw, gauss):
 ```
 python trainer_flowpure.py --dataset [CIFAR10/CIFAR100] --noise_type [pgd/cw/gauss]
 ```
