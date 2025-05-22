@@ -12,7 +12,7 @@ Official implementation of the paper:
 </div>
 
 ## Installation
-We recommend setting up the environment with Conda. The codebase currently uses **Python 3.9.20** and **PyTorch 2.0.0**.
+We recommend setting up the environment with Conda. The codebase currently uses **Python 3.9.20** and **PyTorch 2.3.1**.
 ```
 conda create -n FlowPure python==3.9.20
 conda activate FlowPure
@@ -39,7 +39,7 @@ python trainer_flowpure.py --dataset [CIFAR10/CIFAR100] --noise_type [pgd/cw/gau
 ```
 
 ### Evaluation
-To evaluate the baselines and FlowPure, use either `eval_ppb.py` for preprocessor-blind attacks or `eval_DH.py` for white-box DiffHammer attack. The parameters of the defenses and attacks can be adjusted in `config.py`. This evaluation code extends the implementation from [DiffHammer](https://github.com/Ka1b0/DiffHammer).
+To evaluate the baselines and FlowPure, use either `eval_ppb.py` for preprocessor-blind attacks or `eval_DH.py` for the white-box DiffHammer attack. The parameters of the defenses and attacks can be adjusted in `config.py`. This evaluation code extends the implementation from [DiffHammer](https://github.com/Ka1b0/DiffHammer).
 
 
 ## Acknowledgement
