@@ -5,7 +5,7 @@ Official implementation of the paper:
 
 **[FlowPure: Continuous Normalizing Flows for Adversarial Purification](https://arxiv.org/abs/2505.13280v1)**
 
-> **TL;DR**: This work proposes a novel approach to defend against advesarial examples through purification using continuous normalizing flows.
+> **TL;DR**: This work proposes a novel approach to defend against adversarial examples through purification using continuous normalizing flows.
 
 ![FlowPure](<resources/figure/diagram.png>)
 
@@ -33,10 +33,11 @@ pip install -r requirements.txt
 ## Usage
 
 ### Training
-Train a Continuous Normalizing Flow model using `trainer_flowpure.py`, specifying the dataset (CIFAR10 or CIFAR100) and noise type (pgd, cw, gauss):
+Train a Continuous Normalizing Flow model using `trainer_flowpure.py`, specifying the dataset (CIFAR10 or CIFAR100) and noise type (pgd, cw):
 ```
-python trainer_flowpure.py --dataset [CIFAR10/CIFAR100] --noise_type [pgd/cw/gauss]
+python trainer_flowpure.py --dataset [CIFAR10/CIFAR100] --noise_type [pgd/cw]
 ```
+For Stochastic FlowPure, train a standard generative Continuous Normalizing Flow model with [this code](https://github.com/facebookresearch/flow_matching).
 
 ### Evaluation
 To evaluate the baselines and FlowPure, use either `eval_ppb.py` for preprocessor-blind attacks or `eval_DH.py` for the white-box DiffHammer attack. The parameters of the defenses and attacks can be adjusted in `config.py`. This evaluation code extends the implementation from [DiffHammer](https://github.com/Ka1b0/DiffHammer).

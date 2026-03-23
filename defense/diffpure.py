@@ -1,6 +1,8 @@
 import torch
 from torch import nn
-from utils import register, set_seed
+from utils import register, set_seed, gen_seed
+import numpy as np
+import random
 
 
 @register(name='diffpure', funcs='defenses')
@@ -23,6 +25,18 @@ class DiffPureClassifier(nn.Module):
         self.def_max_timesteps, self.defense_steps = self.get_seq(self.def_max_timesteps, 
                                                                   self.def_denoising_steps)
 
+
+    def gen_noise(self, x, seeds, offset):
+        if isinstance(seeds, int): set_seed(gen_seed(seeds, offset))
+        elif seeds is not None:
+            epsilon = []
+            for k, seed in enumerate(seeds):
+                set_seed(gen_seed(seed, offset))
+                epsilon.append(torch.randn_like(x)[k])
+            return torch.stack(epsilon, dim=0)
+        return torch.randn_like(x)
+    
+
     @staticmethod
     def get_seq(max_timesteps, denoising_steps):
         max_timesteps = [int(i) - 1 for i in max_timesteps.split(',')]
@@ -43,7 +57,7 @@ class DiffPureClassifier(nn.Module):
         c_eps = self.get_coefficient(i, seq[idx - 1] if (idx := seq.index(i)) else -1)[-1]
         return c_eps * 2e-3 * (1.0 - self.alphas[i + 1]).sqrt() / (self.eps * self.alphas[i + 1].sqrt())
 
-    def denoising_process(self, x, T, backward=False):
+    def denoising_process(self, x, T, backward=False, seeds=None):
         xt = x.clone().detach()
         seq = self.defense_steps[T]
         att_seq = self.attack_steps[T]
@@ -57,7 +71,7 @@ class DiffPureClassifier(nn.Module):
             et = self.diffusion(xt, i * torch.ones_like(x[:, 0, 0, 0]))
             if et.shape[1] == 6: # imagenet case
                 et, _ = torch.split(et, 3, dim=1)
-            eps = torch.randn_like(x)
+            eps = self.gen_noise(x, seeds, T + (k + 1) * len(self.def_max_timesteps))
             c_xt, c_et, c_eps = self.get_coefficient(i, j)
             if self.guided:
                 s = self.GDMP_step(i, seq)
@@ -79,20 +93,11 @@ class DiffPureClassifier(nn.Module):
     def purify(self, x, backward=False, seeds=None):
         x_diff = (x - 0.5) * 2
         for i, v in enumerate(self.def_max_timesteps):
-            if isinstance(seeds, int): set_seed(seeds + 1000 * i)
-            if isinstance(seeds, list):
-                assert len(seeds) == x.shape[0]
-                epsilon = []
-                for k, seed in enumerate(seeds):
-                    set_seed(seed + 1000 * i)
-                    epsilon.append(torch.randn_like(x)[k])
-                epsilon = torch.stack(epsilon, dim=0)
-            else:
-                epsilon = torch.randn_like(x)
+            epsilon = self.gen_noise(x, seeds, i)
             x_noised = self.noised(x_diff, v, epsilon)
             if self.diff_attack: 
                 self.history['eps'][i] = epsilon.detach()
-            x_diff = self.denoising_process(x_noised, i, backward)
+            x_diff = self.denoising_process(x_noised, i, backward, seeds=seeds)
         return (x_diff / 2) + 0.5 
 
     def forward(self, x, backward=False):
@@ -157,4 +162,3 @@ class DiffPureClassifier(nn.Module):
             x_grad = x0.grad.clone()
         return x_grad.clamp(-1e7, 1e7).detach() * 2, logits, loss_indiv
 
-    

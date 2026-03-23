@@ -13,11 +13,12 @@ from utils import *
 if __name__ == '__main__':
 
     for dataset in ['CIFAR10', 'CIFAR100']:
-        for purification_method in ['gauss_flowpure_0.15', 'gauss_flowpure_0.2', 'cw_flowpure', 'pgd_flowpure',
+        for purification_method in ['flowpure_stoch', 'cw_flowpure', 'pgd_flowpure',
                                     'diffpure', 'gdmp', 'llhd_maximize', 'adbm']:
-            accuracy = None
-            for sample_run in [1,2,3]:
-                cfg = get_config(purification_method, dataset, 'DH', sample_run, 32, 512)
+            for sample_run in [1]:
+            # for sample_run in [1,2,3]:
+                cfg = get_config(purification_method, dataset, 'DH', sample_run, 4, 4)
+                # cfg = get_config(purification_method, dataset, 'DH', sample_run, 32, 512)
                 cfg.NAME = "DH"
                 cfg.OUTPUT_DIR = 'dir'
                 cfg.EXP = ''
@@ -64,8 +65,7 @@ if __name__ == '__main__':
                 model = get_defense(cfg.DEFENSE.METHOD)(diffusion, classifier, df_config)
                 test_loader = get_dataloader(cfg)
                 attacker = get_attacker(cfg.ATTACK.METHOD)(model, cfg, logger, seeder)
-                if accuracy == None:
-                    accuracy = attacker.evaluate_accuracy(test_loader)
+                accuracy = attacker.evaluate_accuracy(test_loader)
                 data, robustness = attacker.evaluate_robustness(test_loader)
                 # torch.save(data, base_path + 'data.pt')
                 for k, v in {**accuracy, **robustness}.items():

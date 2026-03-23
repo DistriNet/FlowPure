@@ -13,9 +13,8 @@ from utils import *
 if __name__ == '__main__':
 
     for dataset in ['CIFAR10', 'CIFAR100']:
-        for purification_method in ['gauss_flowpure_0.15', 'gauss_flowpure_0.2', 'cw_flowpure', 'pgd_flowpure',
+        for purification_method in ['flowpure_stoch', 'cw_flowpure', 'pgd_flowpure',
                                     'diffpure', 'gdmp', 'llhd_maximize', 'adbm']:
-            accuracy = None
             for attack_type in ['class_pgd', 'class_cw']:
                 cfg = get_config(purification_method, dataset, attack_type, 0, 32, 10000)
                 cfg.NAME = f"{attack_type}"
@@ -64,8 +63,7 @@ if __name__ == '__main__':
                 model = get_defense(cfg.DEFENSE.METHOD)(diffusion, classifier, df_config)
                 test_loader = get_dataloader(cfg)
                 attacker = get_attacker(cfg.ATTACK.METHOD)(model, cfg, logger, seeder)
-                if accuracy == None:
-                    accuracy = attacker.evaluate_accuracy(test_loader)
+                accuracy = attacker.evaluate_accuracy(test_loader)
                 data, robustness = attacker.evaluate_robustness(test_loader)
                 # torch.save(data, base_path + 'data.pt')
                 for k, v in {**accuracy, **robustness}.items():

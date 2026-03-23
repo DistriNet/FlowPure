@@ -103,6 +103,7 @@ def update_purification(cfg, purification_method):
         cfg.DEFENSE.FLOWPURE.T_START = 1/2 # 0 is the full process and 1 is no purification ! 
         cfg.DEFENSE.FLOWPURE.DEF_STEPS = 10 # note that these are amount of steps (other methods use step sizes)
         cfg.DEFENSE.FLOWPURE.ATK_STEPS = 5 # note that these are amount of steps (other methods use step sizes)
+        cfg.DEFENSE.FLOWPURE.MEMORY_SAVING = True
     elif purification_method == 'gauss_flowpure_0.2':
         cfg.DEFENSE.METHOD = 'flowpure'
         cfg.DEFENSE.FLOWPURE = CfgNode()
@@ -110,6 +111,7 @@ def update_purification(cfg, purification_method):
         cfg.DEFENSE.FLOWPURE.T_START = 1/3 # 0 is the full process and 1 is no purification ! 
         cfg.DEFENSE.FLOWPURE.DEF_STEPS = 10 # note that these are amount of steps (other methods use step sizes)
         cfg.DEFENSE.FLOWPURE.ATK_STEPS = 5 # note that these are amount of steps (other methods use step sizes)
+        cfg.DEFENSE.FLOWPURE.MEMORY_SAVING = True
     elif purification_method == 'cw_flowpure':
         cfg.DEFENSE.METHOD = 'flowpure'
         cfg.DEFENSE.FLOWPURE = CfgNode()
@@ -117,6 +119,7 @@ def update_purification(cfg, purification_method):
         cfg.DEFENSE.FLOWPURE.T_START = 0 # 0 is the full process and 1 is no purification ! 
         cfg.DEFENSE.FLOWPURE.DEF_STEPS = 10 # note that these are amount of steps (other methods use step sizes)
         cfg.DEFENSE.FLOWPURE.ATK_STEPS = 5 # note that these are amount of steps (other methods use step sizes)
+        cfg.DEFENSE.FLOWPURE.MEMORY_SAVING = True
     elif purification_method == 'pgd_flowpure':
         cfg.DEFENSE.METHOD = 'flowpure'
         cfg.DEFENSE.FLOWPURE = CfgNode()
@@ -124,6 +127,15 @@ def update_purification(cfg, purification_method):
         cfg.DEFENSE.FLOWPURE.T_START = 0 # 0 is the full process and 1 is no purification ! 
         cfg.DEFENSE.FLOWPURE.DEF_STEPS = 10 # note that these are amount of steps (other methods use step sizes)
         cfg.DEFENSE.FLOWPURE.ATK_STEPS = 5 # note that these are amount of steps (other methods use step sizes)
+        cfg.DEFENSE.FLOWPURE.MEMORY_SAVING = True
+    elif purification_method == 'flowpure_stoch':
+        cfg.DEFENSE.METHOD = 'flowpure_stoch'
+        cfg.DEFENSE.FLOWPURE_STOCH = CfgNode()
+        cfg.DEFENSE.FLOWPURE_STOCH.ETA = 1.5
+        cfg.DEFENSE.FLOWPURE_STOCH.T_START = 0.85 # 0 is the full process and 1 is no purification ! 
+        cfg.DEFENSE.FLOWPURE_STOCH.DEF_STEPS = 10 # note that these are amount of steps (other methods use step sizes)
+        cfg.DEFENSE.FLOWPURE_STOCH.ATK_STEPS = 5 # note that these are amount of steps (other methods use step sizes)
+        cfg.DEFENSE.FLOWPURE_STOCH.MEMORY_SAVING = True
     elif purification_method == 'adbm':
         cfg.DEFENSE.METHOD = 'diffpure'
         cfg.DEFENSE.DIFFPURE = CfgNode()
@@ -161,5 +173,7 @@ def update_dataset_and_models(cfg, purification_method, dataset, batch_size, dat
         cfg.DEFENSE.DIFFUSION_NAME = 'flowpure_cw' + suffix
     elif purification_method == 'pgd_flowpure':
         cfg.DEFENSE.DIFFUSION_NAME = 'flowpure_pgd' + suffix
+    elif purification_method == 'flowpure_stoch':
+        cfg.DEFENSE.DIFFUSION_NAME = 'flowmodel' + suffix
     else:
         cfg.DEFENSE.DIFFUSION_NAME = 'adbm' + suffix

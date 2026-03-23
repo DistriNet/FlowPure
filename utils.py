@@ -13,6 +13,7 @@ from models.unets.EDM import get_edm_cifar_uncond
 from models.guided_diffusion.script_util import create_model_and_diffusion, model_and_diffusion_defaults
 from models.SmallResolutionModel import WideResNet_70_16_dropout
 import score_sde.models.utils as mutils
+from flow_matching.examples.image.models.model_configs import instantiate_model
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -65,6 +66,13 @@ def set_seed(seed=1):
     np.random.seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+
+
+def gen_seed(seed, offset):
+    for _ in range(offset):
+        set_seed(seed)
+        seed = random.randint(0, 1e8)
+    return seed
 
 
 def update_log(log, dic, dim=0):
@@ -122,7 +130,6 @@ def judge_success(logits, y, y_target=None):
 def get_model(model_name):
     if model_name == 'adbm_c10':
         diffusion = mutils.create_model(mutils.parse_config('diffusion_configs/cifar10.yml'))
-        # diffusion = diffusion.module
         state_dict = torch.load("./resources/checkpoints/ADBM/checkpoint_c10.pth", weights_only=False)['ema']['shadow_params']
         parameters = [p for p in diffusion.parameters() if p.requires_grad]
         for s_param, param in zip(state_dict, parameters):
@@ -228,26 +235,22 @@ def get_model(model_name):
             "./resources/checkpoints/EDM/edm_cifar100_uncond_vp.pt"))
         return edm_unet.cuda().eval()
     elif model_name == 'score_sde_c10':
-        '''
-        Follow https://github.com/NVlabs/DiffPure/blob/master/runners/diffpure_sde.py to load model,
-        then save `ema` to score_sde_ema.pth to accerate the loading.
-        '''
         diffusion = mutils.create_model(mutils.parse_config('diffusion_configs/cifar10.yml'))
         # diffusion = diffusion.module
-        state_dict = torch.load('./resources/checkpoints/score_sde/checkpoint_c10.pth', weights_only=False)['model']
-        diffusion.load_state_dict(state_dict, strict=False)
+        state_dict = torch.load("./resources/checkpoints/score_sde/checkpoint_c10.pth", weights_only=False)['ema']['shadow_params']
+        parameters = [p for p in diffusion.parameters() if p.requires_grad]
+        for s_param, param in zip(state_dict, parameters):
+            param.data.copy_(s_param.data)
         diffusion.eval()
         diffusion.module
         return diffusion
     elif model_name == 'score_sde_c100':
-        '''
-        Follow https://github.com/NVlabs/DiffPure/blob/master/runners/diffpure_sde.py to load model,
-        then save `ema` to score_sde_ema.pth to accerate the loading.
-        '''
         diffusion = mutils.create_model(mutils.parse_config('diffusion_configs/cifar10.yml'))
-        state_dict = torch.load(
-            './resources/checkpoints/score_sde/checkpoint_c100.pth', weights_only=False)[0]
-        diffusion.load_state_dict(state_dict, strict=False)
+        # diffusion = diffusion.module
+        state_dict = torch.load("./resources/checkpoints/score_sde/checkpoint_c100.pth", weights_only=False)['ema']['shadow_params']
+        parameters = [p for p in diffusion.parameters() if p.requires_grad]
+        for s_param, param in zip(state_dict, parameters):
+            param.data.copy_(s_param.data)
         diffusion.eval()
         diffusion.module
         return diffusion
@@ -294,6 +297,20 @@ def get_model(model_name):
         diffusion = diffusion.module
         rev_diff = RevDiff(diffusion)
         return rev_diff
+    elif model_name == 'flowmodel_c10':
+        state_dict = torch.load("./resources/checkpoints/flowpure_from_zero/checkpoint_c10.pth", weights_only=False)
+        diffusion = instantiate_model('cifar10', is_discrete=False, use_ema=True)
+        diffusion.load_state_dict(state_dict["model"])
+        model = diffusion.model
+        model.eval()
+        return model
+    elif model_name == 'flowmodel_c100':
+        state_dict = torch.load("./resources/checkpoints/flowpure_from_zero/checkpoint_c100.pth", weights_only=False)
+        diffusion = instantiate_model('cifar10', is_discrete=False, use_ema=True)
+        diffusion.load_state_dict(state_dict["model"])
+        model = diffusion.model
+        model.eval()
+        return model
 
 
 def get_defense(defense_method):
